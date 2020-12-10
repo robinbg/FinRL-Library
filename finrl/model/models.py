@@ -8,8 +8,8 @@ import gym
 #from stable_baselines import SAC
 #from stable_baselines import TD3
 
-from stable_baselines.common.policies import MlpPolicy
-from stable_baselines.common.vec_env import DummyVecEnv
+from stable_baselines3.common.policies import MlpPolicy
+from stable_baselines3.common.vec_env import DummyVecEnv
 
 from finrl.config import config
 
