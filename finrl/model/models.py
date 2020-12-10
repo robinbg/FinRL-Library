@@ -42,7 +42,7 @@ class DRLAgent:
 
     def train_A2C(self, model_name, model_params = config.A2C_PARAMS):
         """A2C model"""
-        from stable_baselines import A2C
+        from stable_baselines3 import A2C
         env_train = self.env
         start = time.time()
         model = A2C('MlpPolicy', env_train, 
@@ -62,8 +62,8 @@ class DRLAgent:
 
     def train_DDPG(self, model_name, model_params = config.DDPG_PARAMS):
         """DDPG model"""
-        from stable_baselines import DDPG
-        from stable_baselines.ddpg.policies import DDPGPolicy
+        from stable_baselines3 import DDPG
+      #  from stable_baselines.ddpg.policies import DDPGPolicy
         from stable_baselines.common.noise import OrnsteinUhlenbeckActionNoise
 
 
@@ -93,8 +93,8 @@ class DRLAgent:
 
     def train_TD3(self, model_name, model_params = config.TD3_PARAMS):
         """TD3 model"""
-        from stable_baselines import TD3
-        from stable_baselines.common.noise import NormalActionNoise
+        from stable_baselines3 import TD3
+        from stable_baselines3.common.noise import NormalActionNoise
 
         env_train = self.env
 
@@ -119,7 +119,7 @@ class DRLAgent:
 
     def train_SAC(self, model_name, model_params = config.SAC_PARAMS):
         """TD3 model"""
-        from stable_baselines import SAC
+        from stable_baselines3 import SAC
 
         env_train = self.env
 
@@ -143,11 +143,11 @@ class DRLAgent:
 
     def train_PPO(self, model_name, model_params = config.PPO_PARAMS):
         """PPO model"""
-        from stable_baselines import PPO2
+        from stable_baselines3 import PPO
         env_train = self.env
 
         start = time.time()
-        model = PPO2('MlpPolicy', env_train,
+        model = PPO('MlpPolicy', env_train,
                      n_steps = model_params['n_steps'],
                      ent_coef = model_params['ent_coef'],
                      learning_rate = model_params['learning_rate'],
