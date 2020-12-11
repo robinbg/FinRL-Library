@@ -52,7 +52,7 @@ A2C_PARAMS = {'n_steps':5,
 PPO_PARAMS = {'n_steps':128, 
 			  'ent_coef':0.01, 
 			  'learning_rate':0.00025,   
-			  'nminibatches':4,
+			  'batch_size':4,
 			  'verbose':0,
 			  'timesteps':20000}
 DDPG_PARAMS = {'batch_size':128, 
