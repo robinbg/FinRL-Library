@@ -14,6 +14,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 
 from finrl.config import config
 
+
 class CustomActorCriticPolicy(ActorCriticPolicy):
     def __init__(
         self,
@@ -37,7 +38,17 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
             **kwargs,
         )
         # Disable orthogonal initialization
-        self.ortho_init = False
+
+    @staticmethod
+    def init_weights(module: nn.Module, gain: float = 1) -> None:
+        """
+        Orthogonal initialization (used in PPO and A2C)
+        """
+        if isinstance(module, (nn.Linear, nn.Conv2d)):
+            nn.init.zeros_(module.weight)
+            if module.bias is not None:
+                module.bias.data.fill_(0.0)
+
 
  
 class DRLAgent:
