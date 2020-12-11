@@ -13,7 +13,32 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 
 from finrl.config import config
 
+class CustomActorCriticPolicy(ActorCriticPolicy):
+    def __init__(
+        self,
+        observation_space: gym.spaces.Space,
+        action_space: gym.spaces.Space,
+        lr_schedule: Callable[[float], float],
+        net_arch: Optional[List[Union[int, Dict[str, List[int]]]]] = None,
+        activation_fn: Type[nn.Module] = nn.Tanh,
+        *args,
+        **kwargs,
+    ):
 
+        super(CustomActorCriticPolicy, self).__init__(
+            observation_space,
+            action_space,
+            lr_schedule,
+            net_arch,
+            activation_fn,
+            # Pass remaining arguments to base class
+            *args,
+            **kwargs,
+        )
+        # Disable orthogonal initialization
+        self.ortho_init = False
+
+ 
 class DRLAgent:
     """Provides implementations for DRL algorithms
 
@@ -147,7 +172,7 @@ class DRLAgent:
         env_train = self.env
 
         start = time.time()
-        model = PPO('MlpPolicy', env_train,
+        model = PPO(CustomActorCriticPolicy, env_train,
                      n_steps = model_params['n_steps'],
                      ent_coef = model_params['ent_coef'],
                      learning_rate = model_params['learning_rate'],
