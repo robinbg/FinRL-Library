@@ -192,6 +192,7 @@ class DRLAgent:
         model = PPO(CustomActorCriticPolicy, env_train,
                      n_steps = model_params['n_steps'],
                      ent_coef = model_params['ent_coef'],
+                     n_epochs = model_params['n_epochs'],
                      learning_rate = model_params['learning_rate'],
                      batch_size = model_params['batch_size'],
                      verbose = model_params['verbose'],
