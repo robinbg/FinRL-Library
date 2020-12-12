@@ -198,6 +198,8 @@ class DRLAgent:
                      verbose = model_params['verbose'],
                      tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
                      )
+        if model_params['n_epochs'] == 0:
+            return model
         model.learn(total_timesteps=model_params['timesteps'], tb_log_name = "PPO_run")
         end = time.time()
 
