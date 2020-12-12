@@ -43,6 +43,7 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
             **kwargs,
         )
         # Disable orthogonal initialization
+        self.ortho_init = False
 
     @staticmethod
     def init_weights(module: nn.Module, gain: float = 1) -> None:
