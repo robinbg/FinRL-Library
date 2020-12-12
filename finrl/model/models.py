@@ -43,7 +43,7 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
             **kwargs,
         )
         # Disable orthogonal initialization
-        self.ortho_init = False
+        # self.ortho_init = False
 
     @staticmethod
     def init_weights(module: nn.Module, gain: float = 1) -> None:
@@ -51,6 +51,7 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
         Orthogonal initialization (used in PPO and A2C)
         """
         if isinstance(module, (nn.Linear, nn.Conv2d)):
+            print('Using custom initialization')
             nn.init.zeros_(module.weight)
             if module.bias is not None:
                 module.bias.data.fill_(0.0)
