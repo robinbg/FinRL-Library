@@ -192,7 +192,7 @@ class DRLAgent:
         env_train = self.env
 
         start = time.time()
-        model = PPO(CustomActorCriticPolicy, env_train,
+        model = PPO('MlpPolicy', env_train,
                      n_steps = model_params['n_steps'],
                      ent_coef = model_params['ent_coef'],
                      n_epochs = model_params['n_epochs'],
