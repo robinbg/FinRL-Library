@@ -217,7 +217,7 @@ class DRLAgent:
         account_memory = []
         actions_memory = []
         for i in range(len(test_data.index.unique())):
-            action, _states = model.predict(test_obs)
+            action, _states = model.predict(test_obs,deterministic=True)
             print(action)
             test_obs, rewards, dones, info = test_env.step(action)
             if i == (len(test_data.index.unique()) - 2):
