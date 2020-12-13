@@ -52,7 +52,8 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
         """
         if isinstance(module, (nn.Linear, nn.Conv2d)):
             print('Using custom initialization')
-            nn.init.zeros_(module.weight)
+        #    nn.init.zeros_(module.weight)
+            module.weght.data.fill_(0.0)
             if module.bias is not None:
                 module.bias.data.fill_(0.0)
 
