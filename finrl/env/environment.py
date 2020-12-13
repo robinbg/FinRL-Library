@@ -64,6 +64,19 @@ class EnvSetup:
                                                     tech_indicator_list = self.tech_indicator_list,
                                                     turbulence_threshold = turbulence_threshold)])
         return env_train
+    def create_env_pretrain(self, data, env_class, turbulence_threshold=150):
+        env_train = DummyVecEnv([lambda: env_class(df = data,
+                                                    stock_dim = self.stock_dim,
+                                                    hmax = self.hmax,
+                                                    initial_amount = self.initial_amount,
+                                                    transaction_cost_pct = self.transaction_cost_pct,
+                                                    reward_scaling = self.reward_scaling,
+                                                    state_space = self.state_space,
+                                                    action_space = self.action_space,
+                                                    tech_indicator_list = self.tech_indicator_list,
+                                                    turbulence_threshold = turbulence_threshold,
+                                                    pretrain = True)])
+        return env_train
 
 
     def create_env_validation(self, data, env_class, turbulence_threshold=150):
