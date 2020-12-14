@@ -14,6 +14,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3 import DDPG
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
+from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+
 import gym
 import torch as th
 from torch import nn
