@@ -16,7 +16,7 @@ from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
 from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback
 
-
+from stable_baselines3.common.noise import ActionNoise
 Schedule = Callable[[float], float]
 
 import gym
