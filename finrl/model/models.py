@@ -14,7 +14,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3 import DDPG
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
-from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, Schedule
+from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback
+import stable_baselines3.common.type_aliases as ta
 
 import gym
 import torch as th
@@ -63,7 +64,7 @@ class CustomDDPG(DDPG):
             self,
             policy: Union[str, Type[TD3Policy]],
             env: Union[GymEnv, str],
-            learning_rate: Union[float, Schedule] = 1e-3,
+            learning_rate: Union[float, ta.Schedule] = 1e-3,
             buffer_size: int = int(1e6),
             learning_starts: int = 100,
             batch_size: int = 100,
