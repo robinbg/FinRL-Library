@@ -214,7 +214,6 @@ class DRLAgent:
                      env_train,
                      batch_size=model_params['batch_size'],
                      buffer_size=model_params['buffer_size'],
-                     param_noise=param_noise,
                      action_noise=action_noise,
                      verbose=model_params['verbose'],
                      tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
@@ -224,7 +223,6 @@ class DRLAgent:
                      env_train,
                      batch_size=model_params['batch_size'],
                      buffer_size=model_params['buffer_size'],
-                     param_noise=param_noise,
                      action_noise=action_noise,
                      verbose=model_params['verbose'],
                      tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
