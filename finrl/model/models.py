@@ -42,22 +42,23 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
             *args,
             **kwargs,
         )
-        # Disable orthogonal initialization
-        self.ortho_init = False
-
-    @staticmethod
-    def init_weights(module: nn.Module, gain: float = 1) -> None:
+   
+     def forward(self, obs: th.Tensor, deterministic: bool = True) -> Tuple[th.Tensor, th.Tensor, th.Tensor]:
         """
-        Orthogonal initialization (used in PPO and A2C)
+        Forward pass in all the networks (actor and critic)
+        :param obs: Observation
+        :param deterministic: Whether to sample or use deterministic actions
+        :return: action, value and log probability of the action
         """
-        if isinstance(module, (nn.Linear, nn.Conv2d)):
-            print('Using custom initialization')
-        #    nn.init.zeros_(module.weight)
-            module.weight.data.fill_(0.0)
-            if module.bias is not None:
-                module.bias.data.fill_(0.0)
-
-
+        latent_pi, latent_vf, latent_sde = self._get_latent(obs)
+        # Evaluate the values for the given observations
+        values = self.value_net(latent_vf)
+        distribution = self._get_action_dist_from_latent(latent_pi, latent_sde=latent_sde)
+        actions = distribution.get_actions(deterministic=deterministic)
+        log_prob = distribution.log_prob(actions)
+        return actions, values, log_prob
+    
+    
  
 class DRLAgent:
     """Provides implementations for DRL algorithms
@@ -186,13 +187,14 @@ class DRLAgent:
         return model
 
 
-    def train_PPO(self, model_name, model_params = config.PPO_PARAMS):
+    def train_PPO(self, model_name, model_params = config.PPO_PARAMS, using_default_policy = True):
         """PPO model"""
         from stable_baselines3 import PPO
         env_train = self.env
 
         start = time.time()
-        model = PPO('MlpPolicy', env_train,
+        if using_default_policy:
+            model = PPO('MlpPolicy', env_train,
                      n_steps = model_params['n_steps'],
                      ent_coef = model_params['ent_coef'],
                      n_epochs = model_params['n_epochs'],
@@ -201,8 +203,16 @@ class DRLAgent:
                      verbose = model_params['verbose'],
                      tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
                      )
-        if model_params['n_epochs'] == 0:
-            return model
+        else:
+            model = PPO(CustomActorCriticPolicy, env_train,
+                     n_steps = model_params['n_steps'],
+                     ent_coef = model_params['ent_coef'],
+                     n_epochs = model_params['n_epochs'],
+                     learning_rate = model_params['learning_rate'],
+                     batch_size = model_params['batch_size'],
+                     verbose = model_params['verbose'],
+                     tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+                     )
         model.learn(total_timesteps=model_params['timesteps'], tb_log_name = "PPO_run")
         end = time.time()
 
