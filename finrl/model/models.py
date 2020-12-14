@@ -11,7 +11,7 @@ import gym
 # from stable_baselines.common.policies import MlpPolicy
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.vec_env import DummyVecEnv
-
+from stable_baselines3 import DDPG
 from typing import Callable, Dict, List, Optional, Tuple, Type, Union
 
 import gym
