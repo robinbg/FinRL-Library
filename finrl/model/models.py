@@ -7,7 +7,7 @@ import gym
 # RL models from stable-baselines
 # from stable_baselines import SAC
 # from stable_baselines import TD3
-
+from stable_baselines3.td3.policies import TD3Policy
 # from stable_baselines.common.policies import MlpPolicy
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.vec_env import DummyVecEnv
