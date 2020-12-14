@@ -12,7 +12,7 @@ from stable_baselines3.td3.policies import TD3Policy
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3 import DDPG
-from typing import Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Callable, Dict, List, Optional, Tuple, Type, Union, Any
 
 from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback
 
