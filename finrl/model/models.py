@@ -5,10 +5,10 @@ import time
 import gym
 
 # RL models from stable-baselines
-#from stable_baselines import SAC
-#from stable_baselines import TD3
+# from stable_baselines import SAC
+# from stable_baselines import TD3
 
-#from stable_baselines.common.policies import MlpPolicy
+# from stable_baselines.common.policies import MlpPolicy
 from stable_baselines3.common.policies import ActorCriticPolicy
 from stable_baselines3.common.vec_env import DummyVecEnv
 
@@ -22,16 +22,15 @@ from finrl.config import config
 
 class CustomActorCriticPolicy(ActorCriticPolicy):
     def __init__(
-        self,
-        observation_space: gym.spaces.Space,
-        action_space: gym.spaces.Space,
-        lr_schedule: Callable[[float], float],
-        net_arch: Optional[List[Union[int, Dict[str, List[int]]]]] = None,
-        activation_fn: Type[nn.Module] = nn.Tanh,
-        *args,
-        **kwargs,
+            self,
+            observation_space: gym.spaces.Space,
+            action_space: gym.spaces.Space,
+            lr_schedule: Callable[[float], float],
+            net_arch: Optional[List[Union[int, Dict[str, List[int]]]]] = None,
+            activation_fn: Type[nn.Module] = nn.Tanh,
+            *args,
+            **kwargs,
     ):
-
         super(CustomActorCriticPolicy, self).__init__(
             observation_space,
             action_space,
@@ -42,8 +41,7 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
             *args,
             **kwargs,
         )
-   
-     def forward(self, obs: th.Tensor, deterministic: bool = True) -> Tuple[th.Tensor, th.Tensor, th.Tensor]:
+    def forward(self, obs: th.Tensor, deterministic: bool = True) -> Tuple[th.Tensor, th.Tensor, th.Tensor]:
         """
         Forward pass in all the networks (actor and critic)
         :param obs: Observation
@@ -57,9 +55,8 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
         actions = distribution.get_actions(deterministic=deterministic)
         log_prob = distribution.log_prob(actions)
         return actions, values, log_prob
-    
-    
- 
+
+
 class DRLAgent:
     """Provides implementations for DRL algorithms
 
@@ -83,61 +80,59 @@ class DRLAgent:
     DRL_prediction() 
         make a prediction in a test dataset and get results
     """
+
     def __init__(self, env):
         self.env = env
 
-    def train_A2C(self, model_name, model_params = config.A2C_PARAMS):
+    def train_A2C(self, model_name, model_params=config.A2C_PARAMS):
         """A2C model"""
         from stable_baselines3 import A2C
         env_train = self.env
         start = time.time()
-        model = A2C('MlpPolicy', env_train, 
-                    n_steps = model_params['n_steps'],
-                    ent_coef = model_params['ent_coef'],
-                    learning_rate = model_params['learning_rate'],
-                    verbose = model_params['verbose'],
-                    tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+        model = A2C('MlpPolicy', env_train,
+                    n_steps=model_params['n_steps'],
+                    ent_coef=model_params['ent_coef'],
+                    learning_rate=model_params['learning_rate'],
+                    verbose=model_params['verbose'],
+                    tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
                     )
-        model.learn(total_timesteps=model_params['timesteps'], tb_log_name = "A2C_run")
+        model.learn(total_timesteps=model_params['timesteps'], tb_log_name="A2C_run")
         end = time.time()
 
         model.save(f"{config.TRAINED_MODEL_DIR}/{model_name}")
-        print('Training time (A2C): ', (end-start)/60,' minutes')
+        print('Training time (A2C): ', (end - start) / 60, ' minutes')
         return model
 
-
-    def train_DDPG(self, model_name, model_params = config.DDPG_PARAMS):
+    def train_DDPG(self, model_name, model_params=config.DDPG_PARAMS):
         """DDPG model"""
         from stable_baselines3 import DDPG
-      #  from stable_baselines.ddpg.policies import DDPGPolicy
+        #  from stable_baselines.ddpg.policies import DDPGPolicy
         from stable_baselines.common.noise import OrnsteinUhlenbeckActionNoise
-
 
         env_train = self.env
 
         n_actions = env_train.action_space.shape[-1]
         param_noise = None
-        action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5)*np.ones(n_actions))
+        action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
 
         start = time.time()
-        model = DDPG('MlpPolicy', 
-                    env_train,
-                    batch_size=model_params['batch_size'],
-                    buffer_size=model_params['buffer_size'],
-                    param_noise=param_noise,
-                    action_noise=action_noise,
-                    verbose=model_params['verbose'],
-                    tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
-                    )
-        model.learn(total_timesteps=model_params['timesteps'], tb_log_name = "DDPG_run")
+        model = DDPG('MlpPolicy',
+                     env_train,
+                     batch_size=model_params['batch_size'],
+                     buffer_size=model_params['buffer_size'],
+                     param_noise=param_noise,
+                     action_noise=action_noise,
+                     verbose=model_params['verbose'],
+                     tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+                     )
+        model.learn(total_timesteps=model_params['timesteps'], tb_log_name="DDPG_run")
         end = time.time()
 
         model.save(f"{config.TRAINED_MODEL_DIR}/{model_name}")
-        print('Training time (DDPG): ', (end-start)/60,' minutes')
+        print('Training time (DDPG): ', (end - start) / 60, ' minutes')
         return model
 
-
-    def train_TD3(self, model_name, model_params = config.TD3_PARAMS):
+    def train_TD3(self, model_name, model_params=config.TD3_PARAMS):
         """TD3 model"""
         from stable_baselines3 import TD3
         from stable_baselines3.common.noise import NormalActionNoise
@@ -145,25 +140,25 @@ class DRLAgent:
         env_train = self.env
 
         n_actions = env_train.action_space.shape[-1]
-        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1*np.ones(n_actions))
+        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
 
         start = time.time()
         model = TD3('MlpPolicy', env_train,
                     batch_size=model_params['batch_size'],
                     buffer_size=model_params['buffer_size'],
-                    learning_rate = model_params['learning_rate'],
-                    action_noise = action_noise,
+                    learning_rate=model_params['learning_rate'],
+                    action_noise=action_noise,
                     verbose=model_params['verbose'],
-                    tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+                    tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
                     )
-        model.learn(total_timesteps=model_params['timesteps'], tb_log_name = "TD3_run")
+        model.learn(total_timesteps=model_params['timesteps'], tb_log_name="TD3_run")
         end = time.time()
 
         model.save(f"{config.TRAINED_MODEL_DIR}/{model_name}")
-        print('Training time (DDPG): ', (end-start)/60,' minutes')
+        print('Training time (DDPG): ', (end - start) / 60, ' minutes')
         return model
 
-    def train_SAC(self, model_name, model_params = config.SAC_PARAMS):
+    def train_SAC(self, model_name, model_params=config.SAC_PARAMS):
         """TD3 model"""
         from stable_baselines3 import SAC
 
@@ -173,21 +168,20 @@ class DRLAgent:
         model = SAC('MlpPolicy', env_train,
                     batch_size=model_params['batch_size'],
                     buffer_size=model_params['buffer_size'],
-                    learning_rate = model_params['learning_rate'],
+                    learning_rate=model_params['learning_rate'],
                     learning_starts=model_params['learning_starts'],
                     ent_coef=model_params['ent_coef'],
                     verbose=model_params['verbose'],
-                    tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+                    tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
                     )
-        model.learn(total_timesteps=model_params['timesteps'], tb_log_name = "SAC_run")
+        model.learn(total_timesteps=model_params['timesteps'], tb_log_name="SAC_run")
         end = time.time()
 
         model.save(f"{config.TRAINED_MODEL_DIR}/{model_name}")
-        print('Training time (SAC): ', (end-start)/60,' minutes')
+        print('Training time (SAC): ', (end - start) / 60, ' minutes')
         return model
 
-
-    def train_PPO(self, model_name, model_params = config.PPO_PARAMS, using_default_policy = True):
+    def train_PPO(self, model_name, model_params=config.PPO_PARAMS, using_default_policy=True):
         """PPO model"""
         from stable_baselines3 import PPO
         env_train = self.env
@@ -195,29 +189,29 @@ class DRLAgent:
         start = time.time()
         if using_default_policy:
             model = PPO('MlpPolicy', env_train,
-                     n_steps = model_params['n_steps'],
-                     ent_coef = model_params['ent_coef'],
-                     n_epochs = model_params['n_epochs'],
-                     learning_rate = model_params['learning_rate'],
-                     batch_size = model_params['batch_size'],
-                     verbose = model_params['verbose'],
-                     tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
-                     )
+                        n_steps=model_params['n_steps'],
+                        ent_coef=model_params['ent_coef'],
+                        n_epochs=model_params['n_epochs'],
+                        learning_rate=model_params['learning_rate'],
+                        batch_size=model_params['batch_size'],
+                        verbose=model_params['verbose'],
+                        tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+                        )
         else:
             model = PPO(CustomActorCriticPolicy, env_train,
-                     n_steps = model_params['n_steps'],
-                     ent_coef = model_params['ent_coef'],
-                     n_epochs = model_params['n_epochs'],
-                     learning_rate = model_params['learning_rate'],
-                     batch_size = model_params['batch_size'],
-                     verbose = model_params['verbose'],
-                     tensorboard_log = f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
-                     )
-        model.learn(total_timesteps=model_params['timesteps'], tb_log_name = "PPO_run")
+                        n_steps=model_params['n_steps'],
+                        ent_coef=model_params['ent_coef'],
+                        n_epochs=model_params['n_epochs'],
+                        learning_rate=model_params['learning_rate'],
+                        batch_size=model_params['batch_size'],
+                        verbose=model_params['verbose'],
+                        tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+                        )
+        model.learn(total_timesteps=model_params['timesteps'], tb_log_name="PPO_run")
         end = time.time()
 
         model.save(f"{config.TRAINED_MODEL_DIR}/{model_name}")
-        print('Training time (PPO): ', (end-start)/60,' minutes')
+        print('Training time (PPO): ', (end - start) / 60, ' minutes')
         return model
 
     @staticmethod
@@ -227,11 +221,11 @@ class DRLAgent:
         account_memory = []
         actions_memory = []
         for i in range(len(test_data.index.unique())):
-            action, _states = model.predict(test_obs,deterministic=True)
+            action, _states = model.predict(test_obs, deterministic=True)
             print(action)
             test_obs, rewards, dones, info = test_env.step(action)
             if i == (len(test_data.index.unique()) - 2):
-                account_memory = test_env.env_method(method_name = 'save_asset_memory')
-                actions_memory = test_env.env_method(method_name = 'save_action_memory')
+                account_memory = test_env.env_method(method_name='save_asset_memory')
+                actions_memory = test_env.env_method(method_name='save_action_memory')
         end = time.time()
         return account_memory[0], actions_memory[0]
