@@ -56,7 +56,95 @@ class CustomActorCriticPolicy(ActorCriticPolicy):
         log_prob = distribution.log_prob(actions)
         return actions, values, log_prob
 
+class CustomDDPG(DDPG):
+    def __init__(
+            self,
+            policy: Union[str, Type[TD3Policy]],
+            env: Union[GymEnv, str],
+            learning_rate: Union[float, Schedule] = 1e-3,
+            buffer_size: int = int(1e6),
+            learning_starts: int = 100,
+            batch_size: int = 100,
+            tau: float = 0.005,
+            gamma: float = 0.99,
+            train_freq: int = -1,
+            gradient_steps: int = -1,
+            n_episodes_rollout: int = 1,
+            action_noise: Optional[ActionNoise] = None,
+            optimize_memory_usage: bool = False,
+            tensorboard_log: Optional[str] = None,
+            create_eval_env: bool = False,
+            policy_kwargs: Dict[str, Any] = None,
+            verbose: int = 0,
+            seed: Optional[int] = None,
+            device: Union[th.device, str] = "auto",
+            _init_setup_model: bool = True,
+    ):
+        super(DDPG, self).__init__(
+            policy=policy,
+            env=env,
+            learning_rate=learning_rate,
+            buffer_size=buffer_size,
+            learning_starts=learning_starts,
+            batch_size=batch_size,
+            tau=tau,
+            gamma=gamma,
+            train_freq=train_freq,
+            gradient_steps=gradient_steps,
+            n_episodes_rollout=n_episodes_rollout,
+            action_noise=action_noise,
+            policy_kwargs=policy_kwargs,
+            tensorboard_log=tensorboard_log,
+            verbose=verbose,
+            device=device,
+            create_eval_env=create_eval_env,
+            seed=seed,
+            optimize_memory_usage=optimize_memory_usage,
+            _init_setup_model=_init_setup_model,
+        )
 
+    def _sample_action(
+            self, learning_starts: int, action_noise: Optional[ActionNoise] = None
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Sample an action according to the exploration policy.
+        This is either done by sampling the probability distribution of the policy,
+        or sampling a random action (from a uniform distribution over the action space)
+        or by adding noise to the deterministic output.
+        :param action_noise: Action noise that will be used for exploration
+            Required for deterministic policy (e.g. TD3). This can also be used
+            in addition to the stochastic policy for SAC.
+        :param learning_starts: Number of steps before learning for the warm-up phase.
+        :return: action to take in the environment
+            and scaled action that will be stored in the replay buffer.
+            The two differs when the action space is not normalized (bounds are not [-1, 1]).
+        """
+        # Select action randomly or according to policy
+        if self.num_timesteps < learning_starts and not (self.use_sde and self.use_sde_at_warmup):
+            # Warmup phase
+            unscaled_action = np.array([self.action_space.sample()])
+        else:
+            # Note: when using continuous actions,
+            # we assume that the policy uses tanh to scale the action
+            # We use non-deterministic action in the case of SAC, for TD3, it does not matter
+            unscaled_action, _ = self.predict(self._last_obs, deterministic=True)
+
+        # Rescale the action from [low, high] to [-1, 1]
+        if isinstance(self.action_space, gym.spaces.Box):
+            scaled_action = self.policy.scale_action(unscaled_action)
+
+            # Add noise to the action (improve exploration)
+            if action_noise is not None:
+                scaled_action = np.clip(scaled_action + action_noise(), -1, 1)
+
+            # We store the scaled action in the buffer
+            buffer_action = scaled_action
+            action = self.policy.unscale_action(scaled_action)
+        else:
+            # Discrete case, no need to normalize or clip
+            buffer_action = unscaled_action
+            action = buffer_action
+        return action, buffer_action
 class DRLAgent:
     """Provides implementations for DRL algorithms
 
@@ -103,7 +191,7 @@ class DRLAgent:
         print('Training time (A2C): ', (end - start) / 60, ' minutes')
         return model
 
-    def train_DDPG(self, model_name, model_params=config.DDPG_PARAMS):
+    def train_DDPG(self, model_name, model_params=config.DDPG_PARAMS, using_default_policy=True):
         """DDPG model"""
         from stable_baselines3 import DDPG
         #  from stable_baselines.ddpg.policies import DDPGPolicy
@@ -116,7 +204,18 @@ class DRLAgent:
         action_noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(n_actions), sigma=float(0.5) * np.ones(n_actions))
 
         start = time.time()
-        model = DDPG('MlpPolicy',
+        if using_default_policy:
+             model = DDPG('MlpPolicy',
+                     env_train,
+                     batch_size=model_params['batch_size'],
+                     buffer_size=model_params['buffer_size'],
+                     param_noise=param_noise,
+                     action_noise=action_noise,
+                     verbose=model_params['verbose'],
+                     tensorboard_log=f"{config.TENSORBOARD_LOG_DIR}/{model_name}"
+                     )
+        else:
+             model = CustomDDPG('MlpPolicy',
                      env_train,
                      batch_size=model_params['batch_size'],
                      buffer_size=model_params['buffer_size'],
